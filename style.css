@@ -1,88 +1,104 @@
-/* style.css - Photobooth Anteiku */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
 body {
-  background-color: #f9f5ef;
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+  background: #f7f3eb;
   color: #333;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 100vh;
-  padding: 20px;
 }
 
 .container {
-  max-width: 800px;
-  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
   padding: 20px;
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
 }
 
 header h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #8c6239;
+  font-size: 2.5rem;
+  color: #a87c5f;
+  margin-bottom: 10px;
 }
 
 .camera {
   position: relative;
   width: 100%;
-  aspect-ratio: 3/4;
-  overflow: hidden;
-  border-radius: 12px;
+  max-width: 720px;
+  margin: 20px auto;
+  aspect-ratio: 3 / 4;
   background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
 }
 
-#video, #canvas, #frame {
+video, canvas, #frame {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 .controls {
-  display: flex;
-  justify-content: space-between;
   margin: 20px 0;
 }
 
-.controls select, .controls button {
-  padding: 10px 14px;
-  font-size: 1rem;
+select, button {
+  padding: 12px 20px;
+  margin: 10px;
+  border: none;
   border-radius: 8px;
-  border: 1px solid #ccc;
-  background-color: #fff;
+  font-size: 1rem;
   cursor: pointer;
-  transition: 0.2s;
+  transition: background 0.3s;
 }
 
-.controls button:hover {
-  background-color: #eee;
+select {
+  background: #fff;
+  border: 1px solid #ccc;
+}
+
+button#capture {
+  background: #4CAF50;
+  color: #fff;
+}
+
+button#download {
+  background: #2196F3;
+  color: #fff;
+}
+
+button:hover {
+  opacity: 0.9;
 }
 
 .preview {
-  text-align: center;
-  margin-top: 10px;
+  margin-top: 30px;
 }
 
-#previewImage {
+.preview img {
   max-width: 100%;
-  border-radius: 12px;
-  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* Timer countdown */
+#countdown {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #ff3b3f;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  display: none;
 }
 
 footer {
-  text-align: center;
-  margin-top: 30px;
+  margin-top: 40px;
   font-size: 0.9rem;
   color: #aaa;
 }
