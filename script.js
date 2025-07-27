@@ -13,8 +13,8 @@ let retryCount = 0;
 let capturedImages = [];
 
 // Set 15x6 cm at 100dpi = 1500x600 px
-const canvasWidth = 1500;
-const canvasHeight = 600;
+const canvasWidth = 432;
+const canvasHeight = 1080;
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 
