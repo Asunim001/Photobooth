@@ -1,41 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Photobooth Anteiku</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>Photobooth Anteiku</h1>
-    </header>
+    <h1>Photobooth Anteiku</h1>
+    
+    <div class="camera">
+      <video id="video" autoplay></video>
+      <div id="countdown"></div>
+    </div>
 
-    <main>
-      <div class="camera">
-        <video id="video" autoplay></video>
-        <canvas id="canvas"></canvas>
-        <img id="frame" src="frames/frame1.png" alt="Frame" />
-      </div>
+    <div class="controls">
+      <button id="start">Ambil Gambar</button>
+      <button id="retry" disabled>Ulangi</button>
+      <button id="download" disabled>Unduh</button>
+      <button id="print" disabled>Cetak</button>
+      <form id="emailForm">
+        <input type="email" id="email" placeholder="Email kamu" required />
+        <button type="submit" id="sendEmail" disabled>Kirim ke Email</button>
+      </form>
+    </div>
 
-      <div class="controls">
-        <select id="frameSelector"></select>
-        <button id="capture">Ambil Foto</button>
-        <button id="download">Unduh</button>
-        <button id="print">Cetak</button>
-      </div>
-
-      <div class="preview">
-        <img id="previewImage" src="" alt="Preview" />
-      </div>
-    </main>
-
-    <footer>
-      <p>&copy; 2025 Kedai Anteiku</p>
-    </footer>
+    <div class="preview">
+      <canvas id="canvas" width="1772" height="709"></canvas>
+    </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
