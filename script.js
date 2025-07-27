@@ -1,57 +1,31 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const countdown = document.getElementById('countdown');
-
+const frameImg = document.getElementById('frame');
+const previewImage = document.getElementById('previewImage');
 const startBtn = document.getElementById('start');
 const retryBtn = document.getElementById('retry');
 const downloadBtn = document.getElementById('download');
 const printBtn = document.getElementById('print');
-const emailForm = document.getElementById('emailForm');
+const countdown = document.getElementById('countdown');
 const emailInput = document.getElementById('email');
-const sendEmailBtn = document.getElementById('sendEmail');
 
 let retryCount = 0;
-let maxRetry = 2;
-let photos = [];
+let capturedImages = [];
 
-// Mulai kamera
-navigator.mediaDevices.getUserMedia({ video: true })
-  .then(stream => {
-    video.srcObject = stream;
-  })
-  .catch(err => {
-    alert("Kamera tidak tersedia: " + err.message);
-  });
+// Set 15x6 cm at 100dpi = 1500x600 px
+const canvasWidth = 1500;
+const canvasHeight = 600;
+canvas.width = canvasWidth;
+canvas.height = canvasHeight;
 
-// Tombol ambil 3 foto
-startBtn.onclick = async () => {
-  disableAll();
-  photos = [];
-  for (let i = 0; i < 3; i++) {
-    await countdownTimer(5);
-    const snapshot = takeSnapshot();
-    photos.push(snapshot);
-  }
+// Load camera
+navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+  video.srcObject = stream;
+});
 
-  const frame = new Image();
-  frame.src = 'frames/frame3pose.png'; // Ukuran 15x6cm 300dpi → 1772x709
-  frame.onload = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
-
-    const photoHeight = canvas.height / 3;
-    for (let i = 0; i < 3; i++) {
-      ctx.drawImage(photos[i], 0, i * photoHeight, canvas.width, photoHeight);
-    }
-
-    enableActions();
-  };
-};
-
-// Timer
-function countdownTimer(seconds) {
-  return new Promise(resolve => {
+// Countdown timer
+function startCountdown(seconds) {
+  return new Promise((resolve) => {
     countdown.style.display = 'block';
     let count = seconds;
     countdown.textContent = count;
@@ -67,86 +41,88 @@ function countdownTimer(seconds) {
   });
 }
 
-// Ambil snapshot
-function takeSnapshot() {
-  const snapCanvas = document.createElement('canvas');
-  snapCanvas.width = canvas.width;
-  snapCanvas.height = canvas.height / 3;
-  const snapCtx = snapCanvas.getContext('2d');
-  snapCtx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
-  return snapCanvas;
+// Capture a pose
+async function capturePose() {
+  await startCountdown(5);
+  const snapshot = document.createElement('canvas');
+  snapshot.width = 500;
+  snapshot.height = 600;
+
+  const ctx = snapshot.getContext('2d');
+  ctx.drawImage(video, 0, 0, 500, 600);
+  return snapshot;
 }
 
-// Cetak otomatis
-printBtn.onclick = () => {
-  const image = canvas.toDataURL('image/png');
-  const win = window.open('', '_blank');
-  win.document.write(`
-    <html>
-      <head><title>Cetak</title></head>
-      <body style="margin:0;text-align:center;">
-        <img src="${image}" style="width:100%;" />
-        <script>
-          window.onload = function() {
-            window.print();
-            window.onafterprint = function() {
-              window.close();
-            }
-          }
-        </script>
-      </body>
-    </html>
-  `);
-  win.document.close();
-};
+// Handle photo session
+startBtn.addEventListener('click', async () => {
+  capturedImages = [];
+  for (let i = 0; i < 3; i++) {
+    const pose = await capturePose();
+    capturedImages.push(pose);
+  }
 
-// Unduh
-downloadBtn.onclick = () => {
-  const link = document.createElement('a');
-  link.href = canvas.toDataURL('image/png');
-  link.download = 'photobooth-anteiku.png';
-  link.click();
-};
-
-// Kirim email dengan EmailJS
-emailForm.addEventListener('submit', function(e) {
-  e.preventDefault();
-  const dataURL = canvas.toDataURL('image/png');
-
-  emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
-    to_email: emailInput.value,
-    image_data: dataURL
-  }, "YOUR_PUBLIC_KEY")
-  .then(() => {
-    alert("Gambar berhasil dikirim ke email!");
-  }, (error) => {
-    alert("Gagal kirim email: " + error.text);
-  });
+  drawToFinalCanvas();
+  retryBtn.disabled = false;
+  downloadBtn.disabled = false;
+  printBtn.disabled = false;
 });
 
-// Tombol ulangi
-retryBtn.onclick = () => {
-  if (retryCount < maxRetry) {
+retryBtn.addEventListener('click', () => {
+  if (retryCount < 2) {
     retryCount++;
     startBtn.click();
   } else {
     retryBtn.disabled = true;
-    alert("Maksimal ulangi 2 kali sudah tercapai.");
   }
-};
+});
 
-// Aktifkan tombol setelah selesai ambil gambar
-function enableActions() {
-  retryBtn.disabled = false;
-  downloadBtn.disabled = false;
-  printBtn.disabled = false;
-  sendEmailBtn.disabled = false;
+// Draw final image
+function drawToFinalCanvas() {
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+  for (let i = 0; i < capturedImages.length; i++) {
+    ctx.drawImage(capturedImages[i], i * 500, 0, 500, 600);
+  }
+
+  const frame = new Image();
+  frame.src = frameImg.src;
+  frame.onload = () => {
+    ctx.drawImage(frame, 0, 0, canvasWidth, canvasHeight);
+    const dataURL = canvas.toDataURL('image/png');
+    previewImage.src = dataURL;
+  };
 }
 
-// Nonaktifkan semua tombol saat proses
-function disableAll() {
-  retryBtn.disabled = true;
-  downloadBtn.disabled = true;
-  printBtn.disabled = true;
-  sendEmailBtn.disabled = true;
-}
+// Download button
+downloadBtn.addEventListener('click', () => {
+  if (emailInput.value.trim() === "") {
+    alert("Masukkan email terlebih dahulu.");
+    return;
+  }
+
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `photobooth-${Date.now()}.png`;
+  a.click();
+
+  // Simulasi integrasi email
+  alert(`File akan dikirim ke email: ${emailInput.value}`);
+});
+
+// Print button
+printBtn.addEventListener('click', () => {
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html><head><title>Cetak Foto</title></head>
+    <body style="margin:0;text-align:center">
+      <img src="${canvas.toDataURL('image/png')}" style="width:100%"/>
+      <script>
+        window.onload = () => {
+          window.print();
+          window.onafterprint = () => window.close();
+        }
+      </script>
+    </body></html>
+  `);
+});
