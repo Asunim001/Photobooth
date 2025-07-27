@@ -1,41 +1,46 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Photobooth Anteiku</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Photobooth Anteiku</h1>
-    
-    <div class="camera">
-      <video id="video" autoplay></video>
-      <div id="countdown"></div>
-    </div>
+    <header>
+      <h1>📸 Photobooth Anteiku</h1>
+    </header>
 
-    <div class="controls">
-      <button id="start">Ambil Gambar</button>
-      <button id="retry" disabled>Ulangi</button>
-      <button id="download" disabled>Unduh</button>
-      <button id="print" disabled>Cetak</button>
-      <form id="emailForm">
-        <input type="email" id="email" placeholder="Email kamu" required />
-        <button type="submit" id="sendEmail" disabled>Kirim ke Email</button>
-      </form>
-    </div>
+    <main>
+      <div class="camera">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+        <img id="frame" src="frames/frame1.png" alt="Frame" />
+        <div id="countdown"></div>
+      </div>
 
-    <div class="preview">
-      <canvas id="canvas" width="1772" height="709"></canvas>
-    </div>
+      <div class="controls">
+        <button id="start">Ambil Gambar</button>
+        <button id="retry" disabled>Ulangi (2x)</button>
+        <button id="download" disabled>Unduh</button>
+        <button id="print" disabled>Cetak</button>
+      </div>
+
+      <div class="email-form">
+        <input type="email" id="email" placeholder="Masukkan Email..." />
+      </div>
+
+      <div class="preview">
+        <img id="previewImage" alt="Hasil Foto"/>
+      </div>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 Kedai Anteiku</p>
+    </footer>
   </div>
 
-  <script>
-  emailjs.init("service_s026dqo");
-  </script>
-
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-  <script src="script.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
