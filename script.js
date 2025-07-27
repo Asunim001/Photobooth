@@ -2,28 +2,44 @@ const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const frameImg = document.getElementById('frame');
 const previewImage = document.getElementById('previewImage');
-const startBtn = document.getElementById('start');
-const retryBtn = document.getElementById('retry');
+const frameSelector = document.getElementById('frameSelector');
+const captureBtn = document.getElementById('capture');
 const downloadBtn = document.getElementById('download');
 const printBtn = document.getElementById('print');
-const countdown = document.getElementById('countdown');
-const emailInput = document.getElementById('email');
+const countdown = document.createElement('div');
+const repeatBtn = document.getElementById('repeat');
 
-let retryCount = 0;
+let repeatCount = 0;
 let capturedImages = [];
 
-// Set 15x6 cm at 100dpi = 1500x600 px
-const canvasWidth = 432;
-const canvasHeight = 1080;
-canvas.width = canvasWidth;
-canvas.height = canvasHeight;
+countdown.id = 'countdown';
+document.querySelector('.camera').appendChild(countdown);
 
-// Load camera
+// Konversi cm ke piksel
+const cmToPx = (cm) => Math.round((cm / 2.54) * 150);
+const WIDTH = cmToPx(6);  // 15 cm
+const HEIGHT = cmToPx(15);  // 6 cm
+
+// Load kamera
 navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
   video.srcObject = stream;
 });
 
-// Countdown timer
+// Load frame ke dropdown
+for (let i = 1; i <= 10; i++) {
+  const option = document.createElement('option');
+  option.value = `frames/frame${i}.png`;
+  option.textContent = `Frame ${i}`;
+  frameSelector.appendChild(option);
+}
+frameSelector.value = 'frames/frame1.png';
+
+// Ganti frame
+frameSelector.addEventListener('change', () => {
+  frameImg.src = frameSelector.value;
+});
+
+// Countdown 5 detik
 function startCountdown(seconds) {
   return new Promise((resolve) => {
     countdown.style.display = 'block';
@@ -31,98 +47,125 @@ function startCountdown(seconds) {
     countdown.textContent = count;
     const interval = setInterval(() => {
       count--;
-      countdown.textContent = count;
       if (count === 0) {
-        clearInterval(interval);
+        countdown.textContent = '';
         countdown.style.display = 'none';
+        clearInterval(interval);
         resolve();
+      } else {
+        countdown.textContent = count;
       }
     }, 1000);
   });
 }
 
-// Capture a pose
-async function capturePose() {
-  await startCountdown(5);
-  const snapshot = document.createElement('canvas');
-  snapshot.width = 500;
-  snapshot.height = 600;
+// Tangkap 3 pose dan gabungkan
+captureBtn.addEventListener('click', async () => {
+  capturedImages = [];
+  repeatCount = 0;
+  for (let i = 0; i < 3; i++) {
+    await startCountdown(5);
+    capturedImages.push(await takeSinglePhoto());
+  }
+  combinePhotos();
+});
 
-  const ctx = snapshot.getContext('2d');
-  ctx.drawImage(video, 0, 0, 500, 600);
-  return snapshot;
-}
-
-// Handle photo session
-startBtn.addEventListener('click', async () => {
+// Tombol ulang hanya bisa 2x
+repeatBtn.addEventListener('click', async () => {
+  if (repeatCount >= 2) {
+    alert('Ulangi hanya dapat dilakukan 2 kali.');
+    return;
+  }
+  repeatCount++;
   capturedImages = [];
   for (let i = 0; i < 3; i++) {
-    const pose = await capturePose();
-    capturedImages.push(pose);
+    await startCountdown(5);
+    capturedImages.push(await takeSinglePhoto());
   }
-
-  drawToFinalCanvas();
-  retryBtn.disabled = false;
-  downloadBtn.disabled = false;
-  printBtn.disabled = false;
+  combinePhotos();
 });
 
-retryBtn.addEventListener('click', () => {
-  if (retryCount < 2) {
-    retryCount++;
-    startBtn.click();
-  } else {
-    retryBtn.disabled = true;
-  }
-});
+// Fungsi ambil foto tunggal
+function takeSinglePhoto() {
+  return new Promise((resolve) => {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = WIDTH;
+    tempCanvas.height = HEIGHT / 3;
+    const ctx = tempCanvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+    resolve(tempCanvas.toDataURL('image/png'));
+  });
+}
 
-// Draw final image
-function drawToFinalCanvas() {
+// Gabungkan 3 foto jadi satu strip
+function combinePhotos() {
+  canvas.width = WIDTH;
+  canvas.height = HEIGHT;
   const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-  for (let i = 0; i < capturedImages.length; i++) {
-    ctx.drawImage(capturedImages[i], i * 500, 0, 500, 600);
-  }
+  // Gambar tiap pose
+  const img1 = new Image();
+  const img2 = new Image();
+  const img3 = new Image();
+  img1.src = capturedImages[0];
+  img2.src = capturedImages[1];
+  img3.src = capturedImages[2];
 
   const frame = new Image();
   frame.src = frameImg.src;
-  frame.onload = () => {
-    ctx.drawImage(frame, 0, 0, canvasWidth, canvasHeight);
+
+  Promise.all([
+    new Promise((res) => (img1.onload = res)),
+    new Promise((res) => (img2.onload = res)),
+    new Promise((res) => (img3.onload = res)),
+    new Promise((res) => (frame.onload = res))
+  ]).then(() => {
+    const sectionHeight = HEIGHT / 3;
+    ctx.drawImage(img1, 0, 0, WIDTH, sectionHeight);
+    ctx.drawImage(img2, 0, sectionHeight, WIDTH, sectionHeight);
+    ctx.drawImage(img3, 0, sectionHeight * 2, WIDTH, sectionHeight);
+    ctx.drawImage(frame, 0, 0, WIDTH, HEIGHT);
+
     const dataURL = canvas.toDataURL('image/png');
     previewImage.src = dataURL;
-  };
+
+    // Tombol unduh
+    downloadBtn.onclick = () => {
+      const email = prompt("Masukkan email Anda untuk mengunduh:");
+      if (email) {
+        const a = document.createElement('a');
+        a.href = dataURL;
+        a.download = `photobooth-${email.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+        a.click();
+      }
+    };
+
+    // Tombol cetak
+    printBtn.onclick = () => {
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Cetak Foto</title>
+            <style>
+              body { margin: 0; text-align: center; }
+              img { width: 100%; max-width: ${WIDTH}px; }
+            </style>
+          </head>
+          <body>
+            <img src="${dataURL}" />
+            <script>
+              window.onload = function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
+                };
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    };
+  });
 }
-
-// Download button
-downloadBtn.addEventListener('click', () => {
-  if (emailInput.value.trim() === "") {
-    alert("Masukkan email terlebih dahulu.");
-    return;
-  }
-
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = `photobooth-${Date.now()}.png`;
-  a.click();
-
-  // Simulasi integrasi email
-  alert(`File akan dikirim ke email: ${emailInput.value}`);
-});
-
-// Print button
-printBtn.addEventListener('click', () => {
-  const win = window.open('', '_blank');
-  win.document.write(`
-    <html><head><title>Cetak Foto</title></head>
-    <body style="margin:0;text-align:center">
-      <img src="${canvas.toDataURL('image/png')}" style="width:100%"/>
-      <script>
-        window.onload = () => {
-          window.print();
-          window.onafterprint = () => window.close();
-        }
-      </script>
-    </body></html>
-  `);
-});
