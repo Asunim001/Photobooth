@@ -5,18 +5,23 @@ const previewImage = document.getElementById('previewImage');
 const frameSelector = document.getElementById('frameSelector');
 const captureBtn = document.getElementById('capture');
 const downloadBtn = document.getElementById('download');
+const printBtn = document.getElementById('print');
 
 // Countdown timer element
 const countdown = document.createElement('div');
 countdown.id = 'countdown';
 document.querySelector('.camera').appendChild(countdown);
 
+// Inisialisasi tombol
+printBtn.style.display = 'none';
+downloadBtn.style.display = 'none';
+
 // Load camera
 navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
   video.srcObject = stream;
 });
 
-// Load frames into selector (assumes frames/frame1.png to frame10.png)
+// Load frames
 for (let i = 1; i <= 10; i++) {
   const option = document.createElement('option');
   option.value = `frames/frame${i}.png`;
@@ -24,17 +29,17 @@ for (let i = 1; i <= 10; i++) {
   frameSelector.appendChild(option);
 }
 
-// Change frame when selector changes
+// Default frame
+frameSelector.value = 'frames/frame1.png';
+frameImg.src = frameSelector.value;
+
 frameSelector.addEventListener('change', () => {
   frameImg.src = frameSelector.value;
 });
 
-// Set default frame
-frameSelector.value = 'frames/frame1.png';
-
-// Capture with countdown
+// Countdown sebelum ambil gambar
 captureBtn.addEventListener('click', async () => {
-  await startCountdown(3); // 3 seconds countdown
+  await startCountdown(3);
   capturePhoto();
 });
 
@@ -58,31 +63,59 @@ function startCountdown(seconds) {
 }
 
 function capturePhoto() {
-  // Buat ukuran canvas sama dengan ukuran asli frame PNG
   const frame = new Image();
   frame.src = frameImg.src;
 
   frame.onload = () => {
     canvas.width = frame.width;
     canvas.height = frame.height;
-
     const ctx = canvas.getContext('2d');
 
-    // Gambar dari video ke canvas
+    // Gambar video & frame
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    // Gambar frame ke atas video
     ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
 
-    // Tampilkan hasil ke preview
     const dataURL = canvas.toDataURL('image/png');
     previewImage.src = dataURL;
 
-    // Enable download
+    // Tampilkan tombol download & cetak
+    downloadBtn.style.display = 'inline-block';
+    printBtn.style.display = 'inline-block';
+
+    // Download file
     downloadBtn.onclick = () => {
       const a = document.createElement('a');
       a.href = dataURL;
       a.download = 'photobooth-anteiku.png';
       a.click();
+    };
+
+    // Cetak gambar
+    printBtn.onclick = () => {
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Cetak Photobooth</title>
+            <style>
+              body { margin: 0; padding: 0; text-align: center; }
+              img { max-width: 100%; height: auto; }
+            </style>
+          </head>
+          <body>
+            <img src="${dataURL}" />
+            <script>
+              window.onload = function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
+                };
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
     };
   };
 }
