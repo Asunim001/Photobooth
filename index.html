@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photobooth Anteiku</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Photobooth Anteiku</div>
+    <div class="camera-area">
+      <video id="video" autoplay muted playsinline></video>
+      <img src="frame.png" alt="Frame" class="frame" />
+      <canvas id="canvas" style="display: none;"></canvas>
+    </div>
+    <div class="controls">
+      <button onclick="takePhoto()">Ambil Foto</button>
+      <button id="downloadBtn" style="display: none;" onclick="downloadPhoto()">Download Foto</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
