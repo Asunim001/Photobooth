@@ -1,69 +1,88 @@
-body {
+/* style.css - Photobooth Anteiku */
+
+* {
   margin: 0;
-  font-family: 'Arial', sans-serif;
-  background: #fdf6ec;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #f9f5ef;
+  color: #333;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
   flex-direction: column;
-  overflow: hidden;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding: 20px;
 }
 
 .container {
+  max-width: 800px;
   width: 100%;
-  max-width: 400px;
+  padding: 20px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
   text-align: center;
-  position: relative;
+  margin-bottom: 20px;
+  color: #8c6239;
 }
 
-.logo {
-  font-size: 24px;
-  margin: 10px 0;
-  color: #6b4f4f;
-  font-weight: bold;
-}
-
-.camera-area {
+.camera {
   position: relative;
   width: 100%;
   aspect-ratio: 3/4;
   overflow: hidden;
-  border: 5px solid #d8c3a5;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #000;
 }
 
-video {
+#video, #canvas, #frame {
+  position: absolute;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.frame {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
 .controls {
-  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
 }
 
-button {
-  background: #c89f7b;
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  margin: 5px;
-  font-size: 16px;
-  border-radius: 6px;
+.controls select, .controls button {
+  padding: 10px 14px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: #fff;
   cursor: pointer;
+  transition: 0.2s;
 }
 
-button:hover {
-  background: #b8855b;
+.controls button:hover {
+  background-color: #eee;
+}
+
+.preview {
+  text-align: center;
+  margin-top: 10px;
+}
+
+#previewImage {
+  max-width: 100%;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+}
+
+footer {
+  text-align: center;
+  margin-top: 30px;
+  font-size: 0.9rem;
+  color: #aaa;
 }
