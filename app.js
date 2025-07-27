@@ -1,55 +1,88 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
-const frame = document.getElementById('frame');
-const frameSelector = document.getElementById('frameSelector');
+const frameImg = document.getElementById('frame');
 const previewImage = document.getElementById('previewImage');
-const captureButton = document.getElementById('capture');
-const downloadButton = document.getElementById('download');
+const frameSelector = document.getElementById('frameSelector');
+const captureBtn = document.getElementById('capture');
+const downloadBtn = document.getElementById('download');
 
-// Mulai kamera
-navigator.mediaDevices.getUserMedia({ video: true })
-  .then(stream => {
-    video.srcObject = stream;
-  })
-  .catch(err => {
-    alert("Kamera tidak bisa diakses: " + err);
-  });
+// Countdown timer element
+const countdown = document.createElement('div');
+countdown.id = 'countdown';
+document.querySelector('.camera').appendChild(countdown);
 
-// Load 10 frame ke dropdown
+// Load camera
+navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+  video.srcObject = stream;
+});
+
+// Load frames into selector (assumes frames/frame1.png to frame10.png)
 for (let i = 1; i <= 10; i++) {
   const option = document.createElement('option');
   option.value = `frames/frame${i}.png`;
-  option.text = `Frame ${i}`;
+  option.textContent = `Frame ${i}`;
   frameSelector.appendChild(option);
 }
 
-// Ganti frame
+// Change frame when selector changes
 frameSelector.addEventListener('change', () => {
-  frame.src = frameSelector.value;
+  frameImg.src = frameSelector.value;
 });
 
-// Ambil foto
-captureButton.addEventListener('click', () => {
-  const context = canvas.getContext('2d');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+// Set default frame
+frameSelector.value = 'frames/frame1.png';
 
-  // Gambar video ke canvas
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+// Capture with countdown
+captureBtn.addEventListener('click', async () => {
+  await startCountdown(3); // 3 seconds countdown
+  capturePhoto();
+});
 
-  // Tambahkan frame ke canvas
-  const frameImage = new Image();
-  frameImage.src = frame.src;
-  frameImage.onload = () => {
-    context.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
-    previewImage.src = canvas.toDataURL('image/png');
+function startCountdown(seconds) {
+  return new Promise((resolve) => {
+    countdown.style.display = 'block';
+    let count = seconds;
+    countdown.textContent = count;
+    const interval = setInterval(() => {
+      count--;
+      if (count === 0) {
+        countdown.textContent = '';
+        countdown.style.display = 'none';
+        clearInterval(interval);
+        resolve();
+      } else {
+        countdown.textContent = count;
+      }
+    }, 1000);
+  });
+}
+
+function capturePhoto() {
+  // Buat ukuran canvas sama dengan ukuran asli frame PNG
+  const frame = new Image();
+  frame.src = frameImg.src;
+
+  frame.onload = () => {
+    canvas.width = frame.width;
+    canvas.height = frame.height;
+
+    const ctx = canvas.getContext('2d');
+
+    // Gambar dari video ke canvas
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    // Gambar frame ke atas video
+    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+
+    // Tampilkan hasil ke preview
+    const dataURL = canvas.toDataURL('image/png');
+    previewImage.src = dataURL;
+
+    // Enable download
+    downloadBtn.onclick = () => {
+      const a = document.createElement('a');
+      a.href = dataURL;
+      a.download = 'photobooth-anteiku.png';
+      a.click();
+    };
   };
-});
-
-// Unduh
-downloadButton.addEventListener('click', () => {
-  const link = document.createElement('a');
-  link.download = `photobooth-anteiku-${Date.now()}.png`;
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-});
+}
