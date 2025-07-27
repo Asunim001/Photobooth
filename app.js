@@ -67,22 +67,25 @@ function capturePhoto() {
   frame.src = frameImg.src;
 
   frame.onload = () => {
-    canvas.width = frame.width;
-    canvas.height = frame.height;
+    // Ukuran 5x16 cm @ 300 DPI
+    const width = 590;
+    const height = 1890;
+
+    canvas.width = width;
+    canvas.height = height;
+
     const ctx = canvas.getContext('2d');
 
-    // Gambar video & frame
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+    // Gambar dari video ke canvas (posisi dan skala sesuai kebutuhan layout pose)
+    ctx.drawImage(video, 0, 0, width, height); // ← ini bisa disesuaikan lagi nanti
 
+    // Tambahkan frame
+    ctx.drawImage(frame, 0, 0, width, height);
+
+    // Tampilkan di preview
     const dataURL = canvas.toDataURL('image/png');
     previewImage.src = dataURL;
 
-    // Tampilkan tombol download & cetak
-    downloadBtn.style.display = 'inline-block';
-    printBtn.style.display = 'inline-block';
-
-    // Download file
     downloadBtn.onclick = () => {
       const a = document.createElement('a');
       a.href = dataURL;
@@ -90,16 +93,24 @@ function capturePhoto() {
       a.click();
     };
 
-    // Cetak gambar
+    // Tombol cetak
+    const printBtn = document.getElementById('print');
     printBtn.onclick = () => {
       const printWindow = window.open('', '_blank');
       printWindow.document.write(`
         <html>
           <head>
-            <title>Cetak Photobooth</title>
+            <title>Print Photobooth</title>
             <style>
-              body { margin: 0; padding: 0; text-align: center; }
-              img { max-width: 100%; height: auto; }
+              body {
+                margin: 0;
+                padding: 0;
+                text-align: center;
+              }
+              img {
+                width: 5cm;
+                height: 16cm;
+              }
             </style>
           </head>
           <body>
