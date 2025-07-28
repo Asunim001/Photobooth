@@ -13,10 +13,11 @@ let retryCount = 0;
 let capturedImages = [];
 
 // Set 15x6 cm at 100dpi = 1500x600 px
-const canvasWidth = 1500;
-const canvasHeight = 600;
-canvas.width = canvasWidth;
-canvas.height = canvasHeight;
+const WIDTH = 886;  // 15 cm
+const HEIGHT = 354; // 6 cm
+
+canvas.width = WIDTH;
+canvas.height = HEIGHT;
 
 // Load camera
 navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
